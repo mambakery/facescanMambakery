@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ตั้งค่าระบบ — แหม่มเบอรี่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="js/api-config.js"></script>
+  <script src="js/auth.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a0d2e 50%, #0d1b2a 100%);
+      color: #e2e8f0;
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 60px;
+      position: relative;
+    }
+
+    body::before {
+      content: ''; position: fixed;
+      width: 400px; height: 400px;
+      background: #06b6d4; border-radius: 50%;
+      filter: blur(100px); opacity: 0.07;
+      top: -100px; right: -100px;
+      pointer-events: none; z-index: 0;
+    }
+
+    .container {
+      width: 100%; max-width: 500px;
+      position: relative; z-index: 1;
+      animation: fadeIn 0.5s ease;
+    }
+
+    /* Top bar */
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #64748b; text-decoration: none; font-size: 0.85em;
+      padding: 6px 12px; border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.25s ease;
+    }
+    .back-btn:hover { color: #e2e8f0; background: rgba(255,255,255,0.1); }
+    .admin-chip {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(147,51,234,0.15);
+      border: 1px solid rgba(147,51,234,0.3);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 0.78em; font-weight: 600; color: #c084fc;
+    }
+    .logout-btn {
+      background: none; border: none; cursor: pointer;
+      color: #475569; font-size: 0.8em; padding: 4px 8px;
+      border-radius: 8px; font-family: 'Sarabun', sans-serif;
+      transition: color 0.2s;
+    }
+    .logout-btn:hover { color: #f87171; }
+
+    /* Header */
+    .page-header { margin-bottom: 24px; }
+    h2 {
+      font-size: 1.55em; font-weight: 700;
+      background: linear-gradient(135deg, #a5b4fc, #e2e8f0);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 4px;
+    }
+    .page-subtitle { font-size: 0.82em; color: #64748b; }
+
+    /* Card */
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 20px; padding: 22px 20px;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      margin-bottom: 14px;
+    }
+
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px; padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .section-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+    }
+    .section-icon.indigo { background: rgba(99,102,241,0.2); }
+    .section-icon.cyan   { background: rgba(6,182,212,0.2);  }
+    .section-icon.purple { background: rgba(147,51,234,0.2); }
+    .section-title-text  { font-weight: 600; font-size: 0.93em; color: #c7d2fe; }
+
+    /* Inputs */
+    label {
+      display: block; font-size: 0.8em; font-weight: 600;
+      color: #94a3b8; margin-bottom: 6px; letter-spacing: 0.03em;
+    }
+    input {
+      width: 100%; padding: 12px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; color: #e2e8f0;
+      font-size: 14px; font-family: 'Sarabun', sans-serif;
+      outline: none; transition: all 0.3s ease;
+      margin-bottom: 14px;
+    }
+    input::placeholder { color: #334155; }
+    input:focus {
+      border-color: rgba(99,102,241,0.5);
+      background: rgba(99,102,241,0.07);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+    }
+    .note {
+      font-size: 0.77em; color: #475569;
+      margin-top: -10px; margin-bottom: 14px; line-height: 1.5;
+    }
+
+    /* Buttons */
+    .btn {
+      border: none; border-radius: 12px; cursor: pointer;
+      font-family: 'Sarabun', sans-serif; font-size: 15px; font-weight: 600;
+      padding: 13px; width: 100%; transition: all 0.3s ease;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-get-loc {
+      background: linear-gradient(135deg, #0891b2, #06b6d4);
+      color: white; box-shadow: 0 4px 15px rgba(6,182,212,0.3);
+      margin-bottom: 18px;
+    }
+    .btn-get-loc:hover {
+      box-shadow: 0 6px 25px rgba(6,182,212,0.45);
+      transform: translateY(-1px);
+    }
+    .btn-save {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white; box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+      font-size: 16px; padding: 15px;
+    }
+    .btn-save:hover {
+      box-shadow: 0 8px 30px rgba(16,185,129,0.5);
+      transform: translateY(-2px);
+    }
+    .btn-ping {
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.3);
+      color: #a5b4fc; margin-bottom: 10px;
+    }
+    .btn-ping:hover { background: rgba(99,102,241,0.22); }
+
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 4px 0 18px; }
+
+    /* Password section */
+    .pw-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+    .pw-row input { margin-bottom: 0; }
+    .btn-pw-change {
+      border: none; border-radius: 10px; cursor: pointer;
+      background: rgba(147,51,234,0.2);
+      border: 1px solid rgba(147,51,234,0.35);
+      color: #c084fc; font-size: 13px; font-weight: 600;
+      padding: 12px 14px; font-family: 'Sarabun', sans-serif;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-pw-change:hover { background: rgba(147,51,234,0.3); }
+
+    #msg {
+      margin-top: 14px; min-height: 22px;
+      font-size: 0.9em; font-weight: 600; text-align: center;
+    }
+    .msg-success { color: #34d399; }
+    .msg-error   { color: #f87171; }
+    .msg-info    { color: #94a3b8; }
+
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin   { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="top-bar">
+    <a href="index.html" class="back-btn">← กลับ</a>
+    <div class="admin-chip">🔒 Admin Session</div>
+    <button class="logout-btn" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+
+  <div class="page-header">
+    <h2>⚙️ ตั้งค่าระบบ</h2>
+    <p class="page-subtitle">🫐 ร้านแหม่มเบอรี่ — Admin Panel</p>
+  </div>
+
+  <!-- API URL -->
+  <div class="card">
+    <div class="section-header">
+      <div class="section-icon indigo">🔗</div>
+      <span class="section-title-text">Google Apps Script API</span>
+    </div>
+
+    <label>WEB APP URL</label>
+    <input type="url" id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    <p class="note">Deploy GAS แล้วนำ URL มาวาง (Execute as: Me / Anyone)</p>
+
+    <button class="btn btn-ping" onclick="pingApi()">
+      🔌 ทดสอบการเชื่อมต่อ
+    </button>
+  </div>
+
+  <!-- GPS -->
+  <div class="card">
+    <div class="section-header">
+      <div class="section-icon cyan">📍</div>
+      <span class="section-title-text">จุดเช็คอิน GPS (ร้านแหม่มเบอรี่)</span>
+    </div>
+
+    <button class="btn btn-get-loc" onclick="getCurrentLocation()">
+      📍 ดึงตำแหน่งปัจจุบัน
+    </button>
+
+    <div class="input-row">
+      <div>
+        <label>LATITUDE</label>
+        <input type="number" step="any" id="lat" placeholder="13.7563">
+      </div>
+      <div>
+        <label>LONGITUDE</label>
+        <input type="number" step="any" id="lng" placeholder="100.5018">
+      </div>
+    </div>
+
+    <label>รัศมีที่ยอมรับ (กิโลเมตร)</label>
+    <input type="number" step="0.01" id="radius" placeholder="เช่น 0.1 = 100 เมตร">
+    <p class="note">* ใส่ 0 หากไม่ต้องการจำกัดพื้นที่</p>
+  </div>
+
+  <!-- Admin Password -->
+  <div class="card">
+    <div class="section-header">
+      <div class="section-icon purple">🔑</div>
+      <span class="section-title-text">เปลี่ยนรหัสผ่าน Admin</span>
+    </div>
+
+    <label>รหัสผ่านปัจจุบัน</label>
+    <input type="password" id="oldPassword" placeholder="รหัสผ่านเดิม" autocomplete="current-password">
+
+    <label>รหัสผ่านใหม่ (อย่างน้อย 4 ตัวอักษร)</label>
+    <div class="pw-row">
+      <input type="password" id="newPassword" placeholder="รหัสผ่านใหม่" autocomplete="new-password">
+      <button class="btn-pw-change" onclick="changePassword()">🔑 เปลี่ยน</button>
+    </div>
+    <div class="note" style="margin-top:10px;">* เปลี่ยนเสร็จจะ logout อัตโนมัติ</div>
+    <div id="pwMsg" style="margin-top:10px; font-size:0.88em; font-weight:600;"></div>
+  </div>
+
+  <!-- Save -->
+  <button class="btn btn-save" onclick="saveAll()">
+    💾 บันทึกการตั้งค่าทั้งหมด
+  </button>
+  <div id="msg"></div>
+
+</div>
+
+<script>
+  // ── Auth Guard ──────────────────────────────────────────
+  let adminToken = requireAdminOrRedirect();
+
+  const msgDiv = document.getElementById('msg');
+
+  window.onload = function() {
+    if (!adminToken) return;
+    const apiUrl = getApiUrl();
+    document.getElementById('apiUrl').value = apiUrl;
+    if (apiUrl && !apiUrl.includes('YOUR_SCRIPT_ID')) {
+      loadGpsConfig(apiUrl);
+    }
+  };
+
+  function loadGpsConfig(apiUrl) {
+    fetch(apiUrl + '?action=getConfig')
+      .then(r => r.json())
+      .then(config => {
+        document.getElementById('lat').value    = config.lat    || '';
+        document.getElementById('lng').value    = config.lng    || '';
+        document.getElementById('radius').value = config.radius || '0';
+      })
+      .catch(() => {});
+  }
+
+  function getCurrentLocation() {
+    if (!navigator.geolocation) return alert('Browser นี้ไม่รองรับ Geolocation');
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        document.getElementById('lat').value = pos.coords.latitude;
+        document.getElementById('lng').value = pos.coords.longitude;
+        showMsg('✅ ดึงพิกัดเรียบร้อย', 'success');
+      },
+      err => showMsg('❌ ดึงตำแหน่งไม่ได้: ' + err.message, 'error')
+    );
+  }
+
+  async function pingApi() {
+    const url = document.getElementById('apiUrl').value.trim();
+    if (!url) return showMsg('❌ กรุณากรอก URL ก่อน', 'error');
+    showMsg('⏳ กำลังทดสอบ...', 'info');
+    try {
+      const res  = await fetch(url + '?action=ping');
+      const data = await res.json();
+      showMsg('✅ เชื่อมต่อสำเร็จ: ' + (data.message || 'API OK'), 'success');
+    } catch (e) {
+      showMsg('❌ เชื่อมต่อไม่ได้: ' + e.message, 'error');
+    }
+  }
+
+  async function saveAll() {
+    const apiUrl = document.getElementById('apiUrl').value.trim();
+    const lat    = document.getElementById('lat').value;
+    const lng    = document.getElementById('lng').value;
+    const radius = document.getElementById('radius').value;
+
+    if (!apiUrl)               return showMsg('❌ กรุณากรอก API URL', 'error');
+    if (!lat || !lng || !radius) return showMsg('❌ กรุณากรอกข้อมูล GPS ให้ครบ', 'error');
+
+    adminToken = getAdminToken();
+    if (!adminToken) { alert('Session หมดอายุ'); doLogout(); return; }
+
+    // Save API URL to localStorage
+    localStorage.setItem('gasApiUrl', apiUrl);
+    showMsg('⏳ กำลังบันทึก...', 'info');
+
+    try {
+      const res  = await fetch(apiUrl, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveConfig', lat, lng, radius, adminToken })
+      });
+      const data = await res.json();
+
+      if (data.error === 'UNAUTHORIZED') {
+        showMsg('❌ Session หมดอายุ กรุณา login ใหม่', 'error');
+        setTimeout(doLogout, 1500);
+        return;
+      }
+      showMsg('✅ ' + (data.message || 'บันทึกสำเร็จ'), 'success');
+    } catch (e) {
+      showMsg('❌ เชื่อมต่อ API ไม่ได้: ' + e.message, 'error');
+    }
+  }
+
+  async function changePassword() {
+    const oldPw = document.getElementById('oldPassword').value.trim();
+    const newPw = document.getElementById('newPassword').value.trim();
+    const pwMsg = document.getElementById('pwMsg');
+
+    if (!oldPw) { pwMsg.innerHTML = '<span style="color:#f87171">❌ กรุณาใส่รหัสผ่านเดิม</span>'; return; }
+    if (!newPw || newPw.length < 4) { pwMsg.innerHTML = '<span style="color:#f87171">❌ รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร</span>'; return; }
+    if (oldPw === newPw) { pwMsg.innerHTML = '<span style="color:#f87171">❌ รหัสผ่านใหม่ต้องต่างจากเดิม</span>'; return; }
+
+    const apiUrl = getApiUrl();
+    if (!apiUrl) return;
+
+    pwMsg.innerHTML = '<span style="color:#94a3b8">⏳ กำลังเปลี่ยนรหัสผ่าน...</span>';
+
+    // Verify old password first
+    try {
+      const res1 = await fetch(apiUrl, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'adminLogin', password: oldPw })
+      });
+      const d1   = await res1.json();
+
+      if (!d1.success) {
+        pwMsg.innerHTML = '<span style="color:#f87171">❌ รหัสผ่านเดิมไม่ถูกต้อง</span>';
+        return;
+      }
+
+      // Reset to new password — use setAdminPassword with special override
+      const res2 = await fetch(apiUrl, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'saveConfig',
+          // We pass GPS values too (reload from current fields)
+          lat: document.getElementById('lat').value,
+          lng: document.getElementById('lng').value,
+          radius: document.getElementById('radius').value,
+          adminToken: d1.token,
+          newAdminPassword: newPw   // GAS will handle this
+        })
+      });
+
+      // Since GAS doesn't yet handle newAdminPassword in saveConfig,
+      // we do a workaround: directly call a dedicated endpoint
+      const res3 = await fetch(apiUrl, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'changeAdminPassword',
+          oldPassword: oldPw,
+          newPassword: newPw,
+          adminToken: d1.token
+        })
+      });
+      const d3 = await res3.json();
+
+      if (d3.success) {
+        pwMsg.innerHTML = '<span style="color:#34d399">✅ เปลี่ยนรหัสผ่านสำเร็จ! กำลัง logout...</span>';
+        setTimeout(() => { clearAdminSession(); window.location.href = 'login.html'; }, 1500);
+      } else {
+        pwMsg.innerHTML = '<span style="color:#f87171">❌ ' + (d3.message || 'เกิดข้อผิดพลาด') + '</span>';
+      }
+    } catch (e) {
+      pwMsg.innerHTML = '<span style="color:#f87171">❌ เกิดข้อผิดพลาด: ' + e.message + '</span>';
+    }
+  }
+
+  function showMsg(text, type) {
+    msgDiv.innerText = text;
+    msgDiv.className = type === 'success' ? 'msg-success' : type === 'error' ? 'msg-error' : 'msg-info';
+  }
+
+  function doLogout() {
+    clearAdminSession();
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>

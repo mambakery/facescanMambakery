@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Login — แหม่มเบอรี่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="js/api-config.js"></script>
+  <script src="js/auth.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a0d2e 50%, #0d1b2a 100%);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      width: 500px; height: 500px;
+      background: #9333ea;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.1;
+      top: -150px; left: -150px;
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      width: 350px; height: 350px;
+      background: #ec4899;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.08;
+      bottom: -100px; right: -100px;
+      pointer-events: none; z-index: 0;
+    }
+
+    .login-wrap {
+      width: 100%; max-width: 400px;
+      position: relative; z-index: 1;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    /* Brand */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .brand-logo {
+      font-size: 50px;
+      display: block; margin-bottom: 10px;
+      filter: drop-shadow(0 0 20px rgba(236,72,153,0.45));
+    }
+    .brand-name {
+      font-size: 1.5em; font-weight: 700;
+      background: linear-gradient(135deg, #f0abfc, #e2e8f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+    .brand-sub { font-size: 0.82em; color: #64748b; }
+
+    /* Card */
+    .login-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 30px 26px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .card-title-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 24px;
+    }
+    .lock-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #9333ea, #7c3aed);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 15px rgba(147,51,234,0.35);
+    }
+    .card-title {
+      font-size: 1.1em; font-weight: 700; color: #e2e8f0;
+    }
+    .card-subtitle { font-size: 0.78em; color: #64748b; }
+
+    /* Form */
+    label {
+      display: block;
+      font-size: 0.8em; font-weight: 600;
+      color: #94a3b8; margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .input-wrap {
+      position: relative; margin-bottom: 20px;
+    }
+    input[type=password], input[type=text] {
+      width: 100%;
+      padding: 13px 44px 13px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      color: #e2e8f0;
+      font-size: 15px;
+      font-family: 'Sarabun', sans-serif;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input::placeholder { color: #334155; }
+    input:focus {
+      border-color: rgba(147,51,234,0.5);
+      background: rgba(147,51,234,0.06);
+      box-shadow: 0 0 0 3px rgba(147,51,234,0.12);
+    }
+    .eye-btn {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: #475569; font-size: 16px; padding: 4px;
+      transition: color 0.2s;
+    }
+    .eye-btn:hover { color: #94a3b8; }
+
+    .btn-login {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #9333ea, #7c3aed);
+      color: white; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700;
+      font-family: 'Sarabun', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(147,51,234,0.35);
+      transition: all 0.3s ease;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-login:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(147,51,234,0.5);
+    }
+    .btn-login:disabled {
+      background: rgba(255,255,255,0.08);
+      color: #475569; box-shadow: none; cursor: default;
+    }
+
+    #msg {
+      margin-top: 14px; min-height: 22px;
+      font-size: 0.88em; font-weight: 600;
+      text-align: center;
+    }
+    .msg-success { color: #34d399; }
+    .msg-error   { color: #f87171; }
+    .msg-info    { color: #94a3b8; }
+
+    /* First-setup notice */
+    .setup-notice {
+      display: none;
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 12px; padding: 14px 16px;
+      margin-top: 18px; font-size: 0.84em; color: #fcd34d;
+      line-height: 1.6;
+    }
+    .setup-notice strong { color: #fbbf24; }
+
+    .back-link {
+      display: block; text-align: center;
+      margin-top: 20px;
+      color: #475569; font-size: 0.85em; text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #94a3b8; }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin     { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="brand-header">
+    <span class="brand-logo">🫐</span>
+    <div class="brand-name">ร้านแหม่มเบอรี่</div>
+    <div class="brand-sub">Maem Berry — Admin Portal</div>
+  </div>
+
+  <div class="login-card">
+    <div class="card-title-row">
+      <div class="lock-icon">🔒</div>
+      <div>
+        <div class="card-title">เข้าสู่ระบบ Admin</div>
+        <div class="card-subtitle">เฉพาะผู้ดูแลระบบเท่านั้น</div>
+      </div>
+    </div>
+
+    <label>รหัสผ่าน Admin</label>
+    <div class="input-wrap">
+      <input type="password" id="passwordInput" placeholder="ใส่รหัสผ่าน"
+             onkeydown="if(event.key==='Enter') doLogin()">
+      <button class="eye-btn" onclick="toggleEye()" title="แสดง/ซ่อนรหัสผ่าน">👁</button>
+    </div>
+
+    <button class="btn-login" id="btnLogin" onclick="doLogin()">
+      🔓 เข้าสู่ระบบ
+    </button>
+
+    <div id="msg"></div>
+
+    <!-- First-time setup notice -->
+    <div class="setup-notice" id="setupNotice">
+      <strong>ยังไม่ได้ตั้งรหัสผ่าน Admin!</strong><br>
+      กรุณาใส่รหัสผ่านที่ต้องการ แล้วกด "<strong>ตั้งรหัสผ่านครั้งแรก</strong>" ด้านล่าง
+      <br><br>
+      <button class="btn-login" onclick="doFirstSetup()" style="margin-top:4px; background: linear-gradient(135deg,#f59e0b,#d97706); box-shadow: 0 4px 15px rgba(245,158,11,0.3);">
+        🔑 ตั้งรหัสผ่านครั้งแรก
+      </button>
+    </div>
+  </div>
+
+  <a href="index.html" class="back-link">← กลับหน้าหลัก</a>
+</div>
+
+<script>
+  const msgDiv = document.getElementById('msg');
+  let nextPage = 'index.html';
+
+  window.onload = function() {
+    // ถ้า login อยู่แล้ว redirect ไปเลย
+    if (getAdminToken()) {
+      const params = new URLSearchParams(window.location.search);
+      nextPage = params.get('next') || 'index.html';
+      window.location.href = nextPage;
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    nextPage = params.get('next') || 'index.html';
+
+    const apiUrl = getApiUrl();
+    if (!apiUrl || apiUrl.includes('YOUR_SCRIPT_ID')) {
+      showMsg('⚠️ ยังไม่ได้ตั้งค่า API URL ใน js/api-config.js', 'info');
+    }
+  };
+
+  function toggleEye() {
+    const inp = document.getElementById('passwordInput');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  async function doLogin() {
+    const password = document.getElementById('passwordInput').value.trim();
+    if (!password) return showMsg('❌ กรุณาใส่รหัสผ่าน', 'error');
+
+    const apiUrl = getApiUrl();
+    if (!apiUrl || apiUrl.includes('YOUR_SCRIPT_ID')) {
+      return showMsg('❌ ยังไม่ได้ตั้งค่า API URL', 'error');
+    }
+
+    const btn = document.getElementById('btnLogin');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> กำลังตรวจสอบ...';
+    showMsg('', '');
+
+    try {
+      const res  = await fetch(apiUrl, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'adminLogin', password })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setAdminSession(data.token);
+        showMsg('✅ เข้าสู่ระบบสำเร็จ! กำลังไป...', 'success');
+        setTimeout(() => { window.location.href = nextPage; }, 700);
+      } else {
+        showMsg('❌ ' + (data.message || 'รหัสผ่านไม่ถูกต้อง'), 'error');
+        btn.disabled = false;
+        btn.innerHTML = '🔓 เข้าสู่ระบบ';
+
+        // Show first-time setup if no password set
+        if (data.message && data.message.includes('ยังไม่ได้ตั้งรหัสผ่าน')) {
+          document.getElementById('setupNotice').style.display = 'block';
+        }
+      }
+    } catch (e) {
+      showMsg('❌ เชื่อมต่อ API ไม่ได้: ' + e.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = '🔓 เข้าสู่ระบบ';
+    }
+  }
+
+  async function doFirstSetup() {
+    const password = document.getElementById('passwordInput').value.trim();
+    if (!password || password.length < 4) {
+      return showMsg('❌ รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร', 'error');
+    }
+
+    const apiUrl = getApiUrl();
+    showMsg('⏳ กำลังตั้งรหัสผ่าน...', 'info');
+
+    try {
+      const res  = await fetch(apiUrl, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'setAdminPassword', password })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showMsg('✅ ตั้งรหัสผ่านสำเร็จ! กรุณา login ด้วยรหัสนี้', 'success');
+        document.getElementById('setupNotice').style.display = 'none';
+      } else {
+        showMsg('❌ ' + data.message, 'error');
+      }
+    } catch (e) {
+      showMsg('❌ เกิดข้อผิดพลาด: ' + e.message, 'error');
+    }
+  }
+
+  function showMsg(text, type) {
+    msgDiv.innerText = text;
+    msgDiv.className = type === 'success' ? 'msg-success' : type === 'error' ? 'msg-error' : 'msg-info';
+  }
+</script>
+</body>
+</html>

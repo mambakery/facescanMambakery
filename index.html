@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>แหม่มเบอรี่ — ระบบบันทึกเวลาเข้างาน</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="js/api-config.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a0d2e 50%, #0d1b2a 100%);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient orbs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 420px; height: 420px;
+      background: #9333ea;
+      opacity: 0.12;
+      top: -120px; left: -100px;
+    }
+    body::after {
+      width: 340px; height: 340px;
+      background: #ec4899;
+      opacity: 0.1;
+      bottom: -80px; right: -80px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+      position: relative; z-index: 1;
+      animation: fadeInDown 0.6s ease;
+    }
+
+    .brand-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(147,51,234,0.15);
+      border: 1px solid rgba(147,51,234,0.35);
+      border-radius: 30px;
+      padding: 6px 16px;
+      font-size: 0.78em; font-weight: 600;
+      color: #c084fc;
+      letter-spacing: 0.05em;
+      margin-bottom: 18px;
+    }
+
+    .logo-wrap {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      margin-bottom: 10px;
+    }
+    .logo-icon {
+      font-size: 52px;
+      filter: drop-shadow(0 0 20px rgba(236,72,153,0.5));
+    }
+    .logo-text { text-align: left; }
+
+    h1 {
+      font-size: 1.9em; font-weight: 700; line-height: 1.1;
+      background: linear-gradient(135deg, #f0abfc, #e2e8f0 60%, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .brand-en {
+      font-size: 0.8em; color: #7c3aed; font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+
+    .subtitle {
+      font-size: 0.83em; color: #64748b;
+      margin-top: 8px;
+    }
+
+    /* Warning */
+    .api-warning {
+      display: none;
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.35);
+      color: #fcd34d;
+      border-radius: 14px;
+      padding: 12px 18px;
+      width: 100%; max-width: 380px;
+      margin-bottom: 20px;
+      font-size: 0.86em;
+      position: relative; z-index: 1;
+      animation: fadeIn 0.5s ease;
+      text-align: center;
+    }
+    .api-warning a { color: #fbbf24; font-weight: 600; text-decoration: none; }
+
+    /* Menu Cards */
+    .menu-cards {
+      width: 100%; max-width: 380px;
+      display: flex; flex-direction: column;
+      gap: 14px;
+      position: relative; z-index: 1;
+    }
+
+    .btn-menu {
+      display: flex; align-items: center; gap: 16px;
+      padding: 18px 22px;
+      text-decoration: none;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      color: #e2e8f0;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      animation: fadeInUp 0.5s ease both;
+    }
+    .btn-menu:nth-child(1) { animation-delay: 0.1s; }
+    .btn-menu:nth-child(2) { animation-delay: 0.2s; }
+    .btn-menu:nth-child(3) { animation-delay: 0.3s; }
+
+    .btn-menu:hover {
+      transform: translateY(-3px);
+      background: rgba(255,255,255,0.09);
+    }
+
+    .btn-scan:hover     { box-shadow: 0 8px 30px rgba(16,185,129,0.3);   border-color: rgba(16,185,129,0.45); }
+    .btn-register:hover { box-shadow: 0 8px 30px rgba(147,51,234,0.3);   border-color: rgba(147,51,234,0.45); }
+    .btn-config:hover   { box-shadow: 0 8px 30px rgba(100,116,139,0.2);  border-color: rgba(148,163,184,0.35); }
+
+    .card-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; flex-shrink: 0;
+    }
+    .btn-scan     .card-icon { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16,185,129,0.4); }
+    .btn-register .card-icon { background: linear-gradient(135deg, #9333ea, #7c3aed); box-shadow: 0 4px 15px rgba(147,51,234,0.4); }
+    .btn-config   .card-icon { background: linear-gradient(135deg, #475569, #334155); box-shadow: 0 4px 15px rgba(71,85,105,0.35); }
+
+    .card-text { flex: 1; text-align: left; }
+    .card-title { font-size: 1.03em; font-weight: 600; color: #f1f5f9; margin-bottom: 2px; }
+    .card-desc  { font-size: 0.79em; color: #64748b; }
+
+    .admin-badge {
+      display: inline-block;
+      background: rgba(147,51,234,0.2);
+      border: 1px solid rgba(147,51,234,0.35);
+      color: #c084fc;
+      font-size: 0.65em; font-weight: 700;
+      padding: 1px 7px; border-radius: 8px;
+      margin-left: 6px; vertical-align: middle;
+      letter-spacing: 0.04em;
+    }
+
+    .card-arrow {
+      font-size: 18px; color: #475569;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+    .btn-menu:hover .card-arrow { transform: translateX(4px); color: #94a3b8; }
+
+    /* Divider */
+    .section-label {
+      font-size: 0.72em; color: #334155; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      width: 100%; max-width: 380px;
+      margin: 8px 0 2px;
+      position: relative; z-index: 1;
+      padding-left: 4px;
+      animation: fadeIn 0.6s ease 0.35s both;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px;
+      font-size: 0.75em; color: #1e293b;
+      position: relative; z-index: 1;
+      text-align: center;
+    }
+
+    /* Animations */
+    @keyframes fadeIn      { from { opacity: 0; }                           to { opacity: 1; } }
+    @keyframes fadeInDown  { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp    { from { opacity: 0; transform: translateY(20px);  } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="brand-badge">🫐 MAEMBERRY ATTENDANCE SYSTEM</div>
+    <div class="logo-wrap">
+      <span class="logo-icon">🫐</span>
+      <div class="logo-text">
+        <h1>ร้านแหม่มเบอรี่</h1>
+        <div class="brand-en">Maem Berry Shop</div>
+      </div>
+    </div>
+    <p class="subtitle">ระบบบันทึกเวลาเข้างาน · Face Recognition + GPS</p>
+  </div>
+
+  <div id="apiWarning" class="api-warning">
+    ⚠️ ยังไม่ได้ตั้งค่า API —
+    <a href="login.html?next=config.html">ไปตั้งค่าก่อน (Admin)</a>
+  </div>
+
+  <div class="menu-cards">
+
+    <!-- Scan - Public -->
+    <a href="scan.html" class="btn-menu btn-scan">
+      <div class="card-icon">📷</div>
+      <div class="card-text">
+        <div class="card-title">สแกนเข้างาน</div>
+        <div class="card-desc">ยืนยันตัวตนด้วยใบหน้า + GPS</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+
+  </div>
+
+  <div class="section-label">🔒 สำหรับ Admin เท่านั้น</div>
+
+  <div class="menu-cards">
+
+    <!-- Register - Admin -->
+    <a href="register.html" class="btn-menu btn-register">
+      <div class="card-icon">👤</div>
+      <div class="card-text">
+        <div class="card-title">ลงทะเบียนพนักงาน <span class="admin-badge">ADMIN</span></div>
+        <div class="card-desc">บันทึกข้อมูลใบหน้าพนักงานใหม่</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+
+    <!-- Config - Admin -->
+    <a href="config.html" class="btn-menu btn-config">
+      <div class="card-icon">⚙️</div>
+      <div class="card-text">
+        <div class="card-title">ตั้งค่าระบบ <span class="admin-badge">ADMIN</span></div>
+        <div class="card-desc">จัดการ GPS จุดเช็คอิน และ API</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+
+  </div>
+
+  <div class="footer">© 2025 ร้านแหม่มเบอรี่ · Powered by face-api.js + Google Sheets</div>
+
+  <script>
+    const apiUrl = localStorage.getItem('gasApiUrl') || (typeof GAS_API_URL !== 'undefined' ? GAS_API_URL : '');
+    if (!apiUrl || apiUrl.includes('YOUR_SCRIPT_ID')) {
+      document.getElementById('apiWarning').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
