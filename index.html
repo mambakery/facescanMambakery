@@ -69,6 +69,13 @@
       margin-bottom: 10px;
     }
     .logo-icon {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      object-fit: cover;
+      filter: drop-shadow(0 0 20px rgba(236,72,153,0.5));
+      flex-shrink: 0;
+    }
+    .logo-icon-fallback {
       font-size: 52px;
       filter: drop-shadow(0 0 20px rgba(236,72,153,0.5));
     }
@@ -202,12 +209,14 @@
 <body>
 
   <div class="header">
-    <div class="brand-badge">🫐 MAMBAKERY ATTENDANCE SYSTEM</div>
+    <div class="brand-badge">🍰 MAMBAKERY ATTENDANCE SYSTEM</div>
     <div class="logo-wrap">
-      <span class="logo-icon">🫐</span>
+      <img src="logo.png" alt="แหม่มเบเกอรี่" class="logo-icon"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span class="logo-icon-fallback" style="display:none;">🍰</span>
       <div class="logo-text">
         <h1>ร้านแหม่มเบเกอรี่</h1>
-        <div class="brand-en">MamBakery Shop</div>
+        <div class="brand-en">Mam Bakery Shop</div>
       </div>
     </div>
     <p class="subtitle">ระบบบันทึกเวลาเข้างาน · Face Recognition + GPS</p>
@@ -258,7 +267,7 @@
 
   </div>
 
-  <div class="footer">© 2026 ร้านแหม่มเบเกอรี่่ · Powered by face-api.js + Google Sheets</div>
+  <div class="footer">© 2025 ร้านแหม่มเบเกอรี่ · Powered by face-api.js + Google Sheets</div>
 
   <script>
     const apiUrl = localStorage.getItem('gasApiUrl') || (typeof GAS_API_URL !== 'undefined' ? GAS_API_URL : '');
