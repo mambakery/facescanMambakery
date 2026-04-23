@@ -437,7 +437,7 @@
       html += '<tr>';
       html += '<td style="color:#334155;">' + (idx + 1) + '</td>';
       html += '<td><strong>' + escHtml(row.name) + '</strong></td>';
-      if (showDateCol) html += '<td style="color:#94a3b8;">' + escHtml(row.date) + '</td>';
+      if (showDateCol) html += '<td style="color:#94a3b8;">' + formatDateDisplay(row.date) + '</td>';
       html += '<td>' + (row.checkIn
         ? '<span class="badge badge-in">✅ ' + row.checkIn + '</span>'
         : '<span class="badge badge-none">— ไม่มีข้อมูล</span>') + '</td>';
@@ -525,6 +525,17 @@
 
   function escHtml(str) {
     return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Convert 'D/M/YYYY' → 'DD/MM/YYYY'
+  function formatDateDisplay(dateStr) {
+    if (!dateStr) return '—';
+    const parts = dateStr.split('/');
+    if (parts.length < 3) return escHtml(dateStr);
+    const d = parts[0].padStart(2, '0');
+    const m = parts[1].padStart(2, '0');
+    const y = parts[2];
+    return d + '/' + m + '/' + y;
   }
 
   function doLogout() { clearAdminSession(); window.location.href = 'index.html'; }
