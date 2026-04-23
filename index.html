@@ -149,6 +149,7 @@
     .btn-scan:hover     { box-shadow: 0 8px 30px rgba(16,185,129,0.3);   border-color: rgba(16,185,129,0.45); }
     .btn-register:hover { box-shadow: 0 8px 30px rgba(147,51,234,0.3);   border-color: rgba(147,51,234,0.45); }
     .btn-config:hover   { box-shadow: 0 8px 30px rgba(100,116,139,0.2);  border-color: rgba(148,163,184,0.35); }
+    .btn-report:hover   { box-shadow: 0 8px 30px rgba(99,102,241,0.3);   border-color: rgba(99,102,241,0.45); }
 
     .card-icon {
       width: 52px; height: 52px;
@@ -159,6 +160,7 @@
     .btn-scan     .card-icon { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16,185,129,0.4); }
     .btn-register .card-icon { background: linear-gradient(135deg, #9333ea, #7c3aed); box-shadow: 0 4px 15px rgba(147,51,234,0.4); }
     .btn-config   .card-icon { background: linear-gradient(135deg, #475569, #334155); box-shadow: 0 4px 15px rgba(71,85,105,0.35); }
+    .btn-report   .card-icon { background: linear-gradient(135deg, #6366f1, #4f46e5); box-shadow: 0 4px 15px rgba(99,102,241,0.4); }
 
     .card-text { flex: 1; text-align: left; }
     .card-title { font-size: 1.03em; font-weight: 600; color: #f1f5f9; margin-bottom: 2px; }
@@ -261,6 +263,16 @@
       <div class="card-text">
         <div class="card-title">ตั้งค่าระบบ <span class="admin-badge">ADMIN</span></div>
         <div class="card-desc">จัดการ GPS จุดเช็คอิน และ API</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+
+    <!-- Report - Admin -->
+    <a href="report.html" class="btn-menu btn-report">
+      <div class="card-icon">📊</div>
+      <div class="card-text">
+        <div class="card-title">รายงานการเข้างาน <span class="admin-badge">ADMIN</span></div>
+        <div class="card-desc">ดูรายวัน / รายเดือน + Export CSV</div>
       </div>
       <span class="card-arrow">›</span>
     </a>

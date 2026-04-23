@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>รายงานการเข้างาน — แหม่มเบเกอรี่</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="js/api-config.js"></script>
+  <script src="js/auth.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0f0f23 0%, #0d1b2a 60%, #0a0f1e 100%);
+      color: #e2e8f0;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 24px 16px 60px;
+      position: relative; overflow-x: hidden;
+    }
+
+    body::before {
+      content: ''; position: fixed;
+      width: 500px; height: 500px; background: #6366f1;
+      border-radius: 50%; filter: blur(120px); opacity: 0.07;
+      top: -150px; left: -150px; pointer-events: none; z-index: 0;
+    }
+
+    .container {
+      width: 100%; max-width: 860px;
+      position: relative; z-index: 1;
+      animation: fadeIn 0.5s ease;
+    }
+
+    /* Top bar */
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 22px;
+    }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #64748b; text-decoration: none; font-size: 0.84em;
+      padding: 6px 12px; border-radius: 20px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.25s ease;
+    }
+    .back-btn:hover { color: #e2e8f0; background: rgba(255,255,255,0.1); }
+    .admin-chip {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(147,51,234,0.15); border: 1px solid rgba(147,51,234,0.3);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 0.78em; font-weight: 600; color: #c084fc;
+    }
+    .logout-btn {
+      background: none; border: none; cursor: pointer;
+      color: #475569; font-size: 0.8em; padding: 4px 8px;
+      border-radius: 8px; font-family: 'Sarabun', sans-serif; transition: color 0.2s;
+    }
+    .logout-btn:hover { color: #f87171; }
+
+    /* Page header */
+    .page-header { margin-bottom: 22px; }
+    h2 {
+      font-size: 1.55em; font-weight: 700;
+      background: linear-gradient(135deg, #a5b4fc, #e2e8f0);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 4px;
+    }
+    .page-subtitle { font-size: 0.82em; color: #64748b; }
+
+    /* Controls card */
+    .controls-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 18px; padding: 20px 20px 18px;
+      margin-bottom: 18px;
+      display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+    }
+
+    /* Mode toggle */
+    .mode-toggle {
+      display: flex; gap: 6px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 12px; padding: 4px;
+    }
+    .mode-btn {
+      padding: 9px 18px; border: none; border-radius: 9px;
+      font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.25s;
+      background: transparent; color: #475569;
+    }
+    .mode-btn.active {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white; box-shadow: 0 3px 12px rgba(99,102,241,0.35);
+    }
+
+    /* Date pickers */
+    .date-group { display: flex; flex-direction: column; gap: 5px; }
+    .date-label { font-size: 0.78em; font-weight: 600; color: #64748b; letter-spacing: 0.04em; }
+    input[type=date], input[type=month] {
+      padding: 9px 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; color: #e2e8f0;
+      font-family: 'Sarabun', sans-serif; font-size: 14px;
+      outline: none; transition: all 0.25s;
+      color-scheme: dark;
+    }
+    input[type=date]:focus, input[type=month]:focus {
+      border-color: rgba(99,102,241,0.5);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+    }
+
+    .btn-load {
+      padding: 10px 22px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white; border: none; border-radius: 10px;
+      font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 3px 12px rgba(99,102,241,0.3);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .btn-load:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.45); }
+    .btn-load:disabled { background: rgba(255,255,255,0.08); color: #475569; box-shadow: none; transform: none; }
+
+    .btn-export {
+      padding: 10px 18px;
+      background: rgba(16,185,129,0.15);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #34d399; border-radius: 10px;
+      font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.25s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .btn-export:hover { background: rgba(16,185,129,0.22); }
+    .btn-export:disabled { opacity: 0.4; cursor: default; }
+
+    /* Summary cards */
+    .summary-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      margin-bottom: 18px;
+    }
+    .summary-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 16px 18px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .summary-label { font-size: 0.75em; color: #64748b; font-weight: 600; letter-spacing: 0.04em; }
+    .summary-value { font-size: 1.9em; font-weight: 700; line-height: 1.1; }
+    .val-total    { color: #a5b4fc; }
+    .val-present  { color: #34d399; }
+    .val-incomplete { color: #fbbf24; }
+
+    /* Table */
+    .table-wrap {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px; overflow: hidden;
+    }
+    .table-head-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .table-title { font-size: 0.9em; font-weight: 700; color: #c7d2fe; }
+    .row-count   { font-size: 0.78em; color: #475569; }
+
+    .report-table {
+      width: 100%; border-collapse: collapse;
+    }
+    .report-table thead tr {
+      background: rgba(99,102,241,0.12);
+    }
+    .report-table th {
+      padding: 12px 16px; text-align: left;
+      font-size: 0.78em; font-weight: 700;
+      color: #94a3b8; letter-spacing: 0.05em;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      white-space: nowrap;
+    }
+    .report-table td {
+      padding: 13px 16px;
+      font-size: 0.88em; color: #e2e8f0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+    }
+    .report-table tbody tr:last-child td { border-bottom: none; }
+    .report-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      border-radius: 8px; padding: 3px 10px;
+      font-size: 0.8em; font-weight: 600; white-space: nowrap;
+    }
+    .badge-in    { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; }
+    .badge-out   { background: rgba(245,158,11,0.15);  border: 1px solid rgba(245,158,11,0.3);  color: #fbbf24; }
+    .badge-miss  { background: rgba(239,68,68,0.1);    border: 1px solid rgba(239,68,68,0.25);   color: #fca5a5; }
+    .badge-none  { background: rgba(100,116,139,0.1);  border: 1px solid rgba(100,116,139,0.2);  color: #64748b; }
+
+    /* Working hours */
+    .hours-text { font-size: 0.82em; color: #64748b; }
+    .hours-ok   { color: #34d399; }
+    .hours-warn { color: #fbbf24; }
+
+    /* Empty / Loading */
+    .state-box {
+      text-align: center; padding: 48px 20px;
+      color: #334155; font-size: 0.92em;
+    }
+    .state-icon  { font-size: 2.5em; display: block; margin-bottom: 10px; }
+
+    .spinner-wrap {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 48px 20px; color: #475569;
+    }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(99,102,241,0.3);
+      border-top-color: #6366f1; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .summary-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .summary-value { font-size: 1.5em; }
+      .report-table th, .report-table td { padding: 10px 10px; }
+      .controls-card { gap: 10px; }
+      .btn-export span { display: none; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin   { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <a href="index.html" class="back-btn">← กลับ</a>
+    <div class="admin-chip">🔒 Admin Session</div>
+    <button class="logout-btn" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <h2>📊 รายงานการเข้างาน</h2>
+    <p class="page-subtitle">🍰 ร้านแหม่มเบเกอรี่ — ดูประวัติรายวันและรายเดือน</p>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-card">
+    <!-- Mode -->
+    <div>
+      <div class="date-label" style="margin-bottom:8px;">ประเภทรายงาน</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btnDaily"   onclick="switchMode('daily')">📅 รายวัน</button>
+        <button class="mode-btn"        id="btnMonthly" onclick="switchMode('monthly')">📆 รายเดือน</button>
+      </div>
+    </div>
+
+    <!-- Date picker daily -->
+    <div class="date-group" id="dailyPicker">
+      <div class="date-label">เลือกวันที่</div>
+      <input type="date" id="dateInput">
+    </div>
+
+    <!-- Month picker monthly (hidden by default) -->
+    <div class="date-group" id="monthlyPicker" style="display:none;">
+      <div class="date-label">เลือกเดือน</div>
+      <input type="month" id="monthInput">
+    </div>
+
+    <!-- Load button -->
+    <button class="btn-load" id="btnLoad" onclick="loadReport()">
+      🔍 ดูรายงาน
+    </button>
+
+    <!-- Export -->
+    <button class="btn-export" id="btnExport" onclick="exportCSV()" disabled>
+      📥 <span>Export CSV</span>
+    </button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-row" id="summaryRow" style="display:none;">
+    <div class="summary-card">
+      <div class="summary-label">📋 รายการทั้งหมด</div>
+      <div class="summary-value val-total" id="sumTotal">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">✅ เข้างานแล้ว</div>
+      <div class="summary-value val-present" id="sumPresent">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">⚠️ ยังไม่ออกงาน</div>
+      <div class="summary-value val-incomplete" id="sumIncomplete">0</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-head-bar">
+      <div class="table-title" id="tableTitle">เลือกวันที่แล้วกด "ดูรายงาน"</div>
+      <div class="row-count"  id="rowCount"></div>
+    </div>
+    <div id="tableBody">
+      <div class="state-box">
+        <span class="state-icon">📊</span>
+        เลือกวันที่หรือเดือนแล้วกดดูรายงาน
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Auth Guard ──────────────────────────────────────
+  const adminToken = requireAdminOrRedirect();
+  const API_URL    = getApiUrl();
+
+  let currentMode = 'daily';
+  let reportData  = [];
+
+  // ── Set today's date as default ─────────────────────
+  window.onload = function() {
+    if (!adminToken) return;
+    const today = new Date();
+    document.getElementById('dateInput').value  = today.toISOString().split('T')[0];
+    document.getElementById('monthInput').value = today.toISOString().slice(0, 7);
+  };
+
+  // ── Mode switch ─────────────────────────────────────
+  function switchMode(mode) {
+    currentMode = mode;
+    document.getElementById('btnDaily').className   = 'mode-btn' + (mode === 'daily'   ? ' active' : '');
+    document.getElementById('btnMonthly').className = 'mode-btn' + (mode === 'monthly' ? ' active' : '');
+    document.getElementById('dailyPicker').style.display   = mode === 'daily'   ? '' : 'none';
+    document.getElementById('monthlyPicker').style.display = mode === 'monthly' ? '' : 'none';
+    clearTable();
+  }
+
+  function clearTable() {
+    reportData = [];
+    document.getElementById('summaryRow').style.display = 'none';
+    document.getElementById('btnExport').disabled = true;
+    document.getElementById('rowCount').innerText = '';
+    document.getElementById('tableTitle').innerText = 'เลือกวันที่แล้วกด "ดูรายงาน"';
+    document.getElementById('tableBody').innerHTML =
+      '<div class="state-box"><span class="state-icon">📊</span>เลือกวันที่หรือเดือนแล้วกดดูรายงาน</div>';
+  }
+
+  // ── Load Report ─────────────────────────────────────
+  async function loadReport() {
+    if (!API_URL || API_URL.includes('YOUR_SCRIPT_ID')) {
+      return alert('❌ ยังไม่ได้ตั้งค่า API URL');
+    }
+
+    let dateParam = '';
+    let titleText = '';
+
+    if (currentMode === 'daily') {
+      const raw = document.getElementById('dateInput').value; // YYYY-MM-DD
+      if (!raw) return alert('กรุณาเลือกวันที่');
+      const parts = raw.split('-');
+      dateParam = parseInt(parts[2]) + '/' + parseInt(parts[1]) + '/' + parts[0]; // D/M/YYYY
+      titleText = 'รายวัน: ' + dateParam;
+    } else {
+      const raw = document.getElementById('monthInput').value; // YYYY-MM
+      if (!raw) return alert('กรุณาเลือกเดือน');
+      const parts = raw.split('-');
+      dateParam = parseInt(parts[1]) + '/' + parts[0]; // M/YYYY
+      titleText = 'รายเดือน: ' + getMonthNameTH(parseInt(parts[1])) + ' ' + parts[0];
+    }
+
+    document.getElementById('btnLoad').disabled = true;
+    document.getElementById('btnLoad').innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(255,255,255,0.3);border-top-color:white;"></span> กำลังโหลด...';
+    document.getElementById('tableBody').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div> กำลังโหลดข้อมูล...</div>';
+    document.getElementById('summaryRow').style.display = 'none';
+    document.getElementById('btnExport').disabled = true;
+
+    try {
+      const url  = API_URL + '?action=getAttendanceReport&mode=' + currentMode + '&date=' + encodeURIComponent(dateParam);
+      const resp = await fetch(url);
+      const data = await resp.json();
+
+      reportData = data.rows || [];
+      renderTable(reportData, data.summary || {}, titleText);
+    } catch (e) {
+      document.getElementById('tableBody').innerHTML =
+        '<div class="state-box"><span class="state-icon">❌</span>โหลดข้อมูลไม่ได้: ' + e.message + '</div>';
+    } finally {
+      document.getElementById('btnLoad').disabled = false;
+      document.getElementById('btnLoad').innerHTML = '🔍 ดูรายงาน';
+    }
+  }
+
+  // ── Render Table ─────────────────────────────────────
+  function renderTable(rows, summary, title) {
+    document.getElementById('tableTitle').innerText = title;
+    document.getElementById('rowCount').innerText   = rows.length + ' รายการ';
+
+    // Summary
+    document.getElementById('sumTotal').innerText      = summary.total      || 0;
+    document.getElementById('sumPresent').innerText    = summary.present    || 0;
+    document.getElementById('sumIncomplete').innerText = summary.incomplete || 0;
+    document.getElementById('summaryRow').style.display = 'grid';
+
+    if (rows.length === 0) {
+      document.getElementById('tableBody').innerHTML =
+        '<div class="state-box"><span class="state-icon">🔍</span>ไม่พบข้อมูลในช่วงเวลาที่เลือก</div>';
+      return;
+    }
+
+    // Show monthly date column if mode is monthly
+    const showDateCol = currentMode === 'monthly';
+
+    let html = '<table class="report-table"><thead><tr>';
+    html += '<th>#</th>';
+    html += '<th>👤 ชื่อพนักงาน</th>';
+    if (showDateCol) html += '<th>📅 วันที่</th>';
+    html += '<th>✅ เวลาเข้างาน</th>';
+    html += '<th>🚪 เวลาออกงาน</th>';
+    html += '<th>⏱ ชั่วโมงทำงาน</th>';
+    html += '<th>สถานะ</th>';
+    html += '</tr></thead><tbody>';
+
+    rows.forEach((row, idx) => {
+      const hoursText = calcHours(row.checkIn, row.checkOut);
+      const statusBadge = getStatusBadge(row.checkIn, row.checkOut);
+
+      html += '<tr>';
+      html += '<td style="color:#334155;">' + (idx + 1) + '</td>';
+      html += '<td><strong>' + escHtml(row.name) + '</strong></td>';
+      if (showDateCol) html += '<td style="color:#94a3b8;">' + escHtml(row.date) + '</td>';
+      html += '<td>' + (row.checkIn
+        ? '<span class="badge badge-in">✅ ' + row.checkIn + '</span>'
+        : '<span class="badge badge-none">— ไม่มีข้อมูล</span>') + '</td>';
+      html += '<td>' + (row.checkOut
+        ? '<span class="badge badge-out">🚪 ' + row.checkOut + '</span>'
+        : (row.checkIn
+            ? '<span class="badge badge-miss">⚠️ ยังไม่ออก</span>'
+            : '<span class="badge badge-none">—</span>')) + '</td>';
+      html += '<td><span class="hours-text ' + hoursText.cls + '">' + hoursText.text + '</span></td>';
+      html += '<td>' + statusBadge + '</td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('tableBody').innerHTML = html;
+    document.getElementById('btnExport').disabled = false;
+  }
+
+  // ── Helpers ──────────────────────────────────────────
+  function calcHours(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return { text: '—', cls: '' };
+    try {
+      const [ih, im, is_] = checkIn.split(':').map(Number);
+      const [oh, om, os_] = checkOut.split(':').map(Number);
+      const inMin  = ih * 60 + im;
+      const outMin = oh * 60 + om;
+      const diff   = outMin - inMin;
+      if (diff < 0) return { text: 'ข้ามวัน', cls: 'hours-warn' };
+      const h = Math.floor(diff / 60), m = diff % 60;
+      const text = h + 'ชม. ' + (m > 0 ? m + 'น.' : '');
+      return { text, cls: diff >= 480 ? 'hours-ok' : 'hours-warn' }; // 8h = OK
+    } catch { return { text: '—', cls: '' }; }
+  }
+
+  function getStatusBadge(checkIn, checkOut) {
+    if (!checkIn)             return '<span class="badge badge-miss">❌ ขาดงาน</span>';
+    if (checkIn && checkOut)  return '<span class="badge badge-in">✅ ครบ</span>';
+    if (checkIn && !checkOut) return '<span class="badge badge-out">⚠️ ยังไม่ออก</span>';
+    return '';
+  }
+
+  // ── Export CSV ───────────────────────────────────────
+  function exportCSV() {
+    if (!reportData.length) return;
+    const showDate = currentMode === 'monthly';
+
+    let csv = showDate
+      ? 'ลำดับ,ชื่อพนักงาน,วันที่,เวลาเข้างาน,เวลาออกงาน,ชั่วโมงทำงาน,สถานะ\n'
+      : 'ลำดับ,ชื่อพนักงาน,เวลาเข้างาน,เวลาออกงาน,ชั่วโมงทำงาน,สถานะ\n';
+
+    reportData.forEach((row, idx) => {
+      const h     = calcHours(row.checkIn, row.checkOut);
+      const status = !row.checkIn ? 'ขาดงาน' : (row.checkOut ? 'ครบ' : 'ยังไม่ออกงาน');
+      const cols  = [
+        idx + 1,
+        '"' + row.name + '"',
+        ...(showDate ? [row.date] : []),
+        row.checkIn  || '-',
+        row.checkOut || '-',
+        h.text || '-',
+        status
+      ];
+      csv += cols.join(',') + '\n';
+    });
+
+    // BOM for Thai UTF-8
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+
+    const dateSuffix = currentMode === 'daily'
+      ? document.getElementById('dateInput').value.replace(/-/g, '')
+      : document.getElementById('monthInput').value.replace('-', '');
+
+    a.href     = url;
+    a.download = 'mambakery_attendance_' + dateSuffix + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function getMonthNameTH(m) {
+    return ['', 'มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+            'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'][m] || '';
+  }
+
+  function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function doLogout() { clearAdminSession(); window.location.href = 'index.html'; }
+</script>
+</body>
+</html>
